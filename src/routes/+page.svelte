@@ -9,7 +9,15 @@
 	let objectUrl: string | null = null;
 	let fileInput: HTMLInputElement = $state();
 	let imageState: 'loading' | 'ready' | 'error' = $state('loading');
-	let frameType: 'none' | 'thirds' | 'golden' = $state('none');
+	let frameType: 'none' | 'thirds' | 'golden' | 'spiral' = $state('none');
+	let spiralRotation: 0 | 90 | 180 | 270 = $state(0);
+
+	const spiralTransforms: Record<0 | 90 | 180 | 270, string> = {
+		0: 'none',
+		90: 'scaleX(-1)',
+		180: 'scale(-1, -1)',
+		270: 'scaleY(-1)'
+	};
 
 	function revokeObjectUrl() {
 		if (objectUrl) {
@@ -30,6 +38,7 @@
 		clearFileInput();
 		imageState = 'loading';
 		frameType = 'none';
+		spiralRotation = 0;
 
 		loadedUrl = urlValue;
 	}
@@ -45,6 +54,7 @@
 		fileName = file.name;
 		imageState = 'loading';
 		frameType = 'none';
+		spiralRotation = 0;
 		loadedUrl = objectUrl;
 	}
 
@@ -173,6 +183,13 @@
 							class="absolute top-0 w-full h-full"
 							style="background-image: url('golden-ratio.svg')"
 						></div>
+					{:else if frameType == 'spiral'}
+						<div
+							class="absolute top-0 w-full h-full"
+							style="background-image: url('golden-spiral.svg'); transform: {spiralTransforms[
+								spiralRotation
+							]};"
+						></div>
 					{/if}
 				</div>
 			</div>
@@ -214,6 +231,35 @@
 				/>
 				Golden Ratio
 			</label>
+			<label for="spiral">
+				<input
+					bind:group={frameType}
+					type="radio"
+					name="frame"
+					id="spiral"
+					value="spiral"
+				/>
+				Golden Spiral
+			</label>
+			{#if frameType == 'spiral'}
+				<div class="flex flex-col gap-2 pl-6">
+					<span class="text-sm text-gray-500">Orientation</span>
+					<div class="flex gap-4">
+						{#each [0, 90, 180, 270] as const as rotation}
+							<label for="spiral-{rotation}">
+								<input
+									bind:group={spiralRotation}
+									type="radio"
+									name="spiral-rotation"
+									id="spiral-{rotation}"
+									value={rotation}
+								/>
+								{rotation}&deg;
+							</label>
+						{/each}
+					</div>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
