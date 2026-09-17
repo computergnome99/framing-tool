@@ -33,9 +33,6 @@
 		"vite": "^8.3.0"
 	},
 	"type": "module",
-	"engines": {
-		"node": "20.x"
-	},
 	"dependencies": {
 		"@tailwindcss/forms": "^0.5.7"
 	}

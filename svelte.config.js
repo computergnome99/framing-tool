@@ -8,13 +8,12 @@ const config = {
   preprocess: vitePreprocess(),
 
   kit: {
-    // Using adapter-vercel directly (instead of adapter-auto) so the Node.js
-    // runtime is pinned explicitly rather than inferred from the build
-    // environment's Node version.
+    // Using adapter-vercel directly (instead of adapter-auto). The runtime is
+    // left unset so it's inferred from the Node.js version configured in the
+    // Vercel project settings, instead of being pinned to a version that will
+    // eventually be deprecated.
     // See https://svelte.dev/docs/kit/adapter-vercel for more information.
-    adapter: adapter({
-      runtime: "nodejs20.x",
-    }),
+    adapter: adapter(),
   },
 };
 
