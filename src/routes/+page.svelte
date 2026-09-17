@@ -5,6 +5,7 @@
 
 	let urlValue = $state('');
 	let loadedUrl = $state('');
+	let fileName = $state('');
 	let objectUrl: string | null = null;
 	let fileInput: HTMLInputElement = $state();
 	let imageState: 'loading' | 'ready' | 'error' = $state('loading');
@@ -17,10 +18,16 @@
 		}
 	}
 
+	function clearFileInput() {
+		fileInput.value = '';
+		fileName = '';
+	}
+
 	function handleSubmit() {
 		if (urlValue === loadedUrl) return;
 
 		revokeObjectUrl();
+		clearFileInput();
 		imageState = 'loading';
 		frameType = 'none';
 
@@ -35,12 +42,10 @@
 		objectUrl = URL.createObjectURL(file);
 
 		urlValue = '';
+		fileName = file.name;
 		imageState = 'loading';
 		frameType = 'none';
 		loadedUrl = objectUrl;
-
-		// allow re-selecting the same file later
-		fileInput.value = '';
 	}
 
 	onDestroy(revokeObjectUrl);
@@ -86,62 +91,92 @@
 	<label for="file" class="grid">
 		<span>Upload Image</span>
 
-		<input
-			bind:this={fileInput}
-			onchange={handleFileChange}
-			type="file"
-			name="file"
-			id="file"
-			accept="image/*"
-			class="border border-gray-500 px-6 py-2 rounded-full file:mr-4 file:rounded-full file:border-0 file:bg-indigo-500 file:text-white file:font-bold file:py-1 file:px-4"
-		/>
+		<div
+			class="relative border border-gray-500 rounded-full flex items-center gap-4 pl-1 pr-6 py-1"
+		>
+			<span
+				class="rounded-full bg-indigo-500 text-white font-bold py-1 px-4 whitespace-nowrap"
+			>
+				Choose File
+			</span>
+			<span class="truncate {fileName ? '' : 'text-gray-500 italic'}">
+				{fileName || 'No file chosen'}
+			</span>
+			<input
+				bind:this={fileInput}
+				onchange={handleFileChange}
+				type="file"
+				name="file"
+				id="file"
+				accept="image/*"
+				class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+			/>
+		</div>
 	</label>
 
 	<hr />
 
 	<div>
-		{#if imageState == 'loading'}
-			{#if loadedUrl}
-				<p class="italic text-gray-700 justify-center items-center flex gap-4">
-					<span class="fas fa-spinner-third fa-spin text-indigo-500"></span>
-					Loading image...
-				</p>
-			{:else}
-				<p class="text-gray-500 text-center">No image</p>
-			{/if}
-		{:else if imageState == 'error'}
-			<p class="text-red-700 text-center">Invalid image!</p>
-		{/if}
-		<div
-			class="relative flex justify-center h-96 {imageState != 'ready'
-				? 'hidden'
-				: 'block'}"
-		>
+		{#if !loadedUrl}
 			<div
-				class="absolute w-full h-full bg-center bg-cover blur-xl brightness-50"
-				style="background-image: url('{loadedUrl}');"
-			></div>
-			<div class="h-96 flex relative">
-				<img
-					src={loadedUrl}
-					class="relative object-contain"
-					alt="User loaded"
-					onload={() => (imageState = 'ready')}
-					onerror={() => (imageState = 'error')}
-				/>
-				{#if frameType == 'thirds'}
-					<div
-						class="absolute top-0 w-full h-full"
-						style="background-image: url('rule-of-thirds.svg')"
-					></div>
-				{:else if frameType == 'golden'}
-					<div
-						class="absolute top-0 w-full h-full"
-						style="background-image: url('golden-ratio.svg')"
-					></div>
-				{/if}
+				class="h-96 rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-3 text-center px-6"
+			>
+				<span class="fas fa-image text-4xl text-gray-400"></span>
+				<p class="text-gray-500">
+					Paste an image URL or upload a file to preview it here.
+				</p>
 			</div>
-		</div>
+		{:else if imageState == 'loading'}
+			<div
+				class="h-96 rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-3 text-center px-6"
+			>
+				<span class="fas fa-spinner-third fa-spin text-4xl text-indigo-500"
+				></span>
+				<p class="italic text-gray-700">Loading image...</p>
+			</div>
+		{:else if imageState == 'error'}
+			<div
+				class="h-96 rounded-2xl border-2 border-dashed border-red-300 flex flex-col items-center justify-center gap-3 text-center px-6"
+			>
+				<span class="fas fa-triangle-exclamation text-4xl text-red-500"></span>
+				<p class="text-red-700 font-bold">Couldn't load that image</p>
+				<p class="text-gray-500 text-sm">
+					Double check the URL, or try a different file.
+				</p>
+			</div>
+		{/if}
+		{#if loadedUrl}
+			<div
+				class="relative flex justify-center h-96 {imageState != 'ready'
+					? 'hidden'
+					: 'block'}"
+			>
+				<div
+					class="absolute w-full h-full bg-center bg-cover blur-xl brightness-50"
+					style="background-image: url('{loadedUrl}');"
+				></div>
+				<div class="h-96 flex relative">
+					<img
+						src={loadedUrl}
+						class="relative object-contain"
+						alt="User loaded"
+						onload={() => (imageState = 'ready')}
+						onerror={() => (imageState = 'error')}
+					/>
+					{#if frameType == 'thirds'}
+						<div
+							class="absolute top-0 w-full h-full"
+							style="background-image: url('rule-of-thirds.svg')"
+						></div>
+					{:else if frameType == 'golden'}
+						<div
+							class="absolute top-0 w-full h-full"
+							style="background-image: url('golden-ratio.svg')"
+						></div>
+					{/if}
+				</div>
+			</div>
+		{/if}
 	</div>
 
 	<br />
