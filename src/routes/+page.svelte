@@ -1,17 +1,47 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	let urlValue = '';
 	let loadedUrl = '';
+	let objectUrl: string | null = null;
+	let fileInput: HTMLInputElement;
 	let imageState: 'loading' | 'ready' | 'error' = 'loading';
 	let frameType: 'none' | 'thirds' | 'golden' = 'none';
+
+	function revokeObjectUrl() {
+		if (objectUrl) {
+			URL.revokeObjectURL(objectUrl);
+			objectUrl = null;
+		}
+	}
 
 	function handleSubmit() {
 		if (urlValue === loadedUrl) return;
 
+		revokeObjectUrl();
 		imageState = 'loading';
 		frameType = 'none';
 
 		loadedUrl = urlValue;
 	}
+
+	function handleFileChange(event: Event) {
+		const file = (event.currentTarget as HTMLInputElement).files?.[0];
+		if (!file) return;
+
+		revokeObjectUrl();
+		objectUrl = URL.createObjectURL(file);
+
+		urlValue = '';
+		imageState = 'loading';
+		frameType = 'none';
+		loadedUrl = objectUrl;
+
+		// allow re-selecting the same file later
+		fileInput.value = '';
+	}
+
+	onDestroy(revokeObjectUrl);
 </script>
 
 <div class="p-10 gap-10 grid">
@@ -44,6 +74,26 @@
 			<span class="fas fa-floppy-disk" /> Load
 		</button>
 	</form>
+
+	<div class="flex items-center gap-4 text-gray-500">
+		<hr class="flex-1" />
+		<span class="italic">or</span>
+		<hr class="flex-1" />
+	</div>
+
+	<label for="file" class="grid">
+		<span>Upload Image</span>
+
+		<input
+			bind:this={fileInput}
+			on:change={handleFileChange}
+			type="file"
+			name="file"
+			id="file"
+			accept="image/*"
+			class="border border-gray-500 px-6 py-2 rounded-full file:mr-4 file:rounded-full file:border-0 file:bg-indigo-500 file:text-white file:font-bold file:py-1 file:px-4"
+		/>
+	</label>
 
 	<hr />
 
