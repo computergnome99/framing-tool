@@ -1,12 +1,14 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onDestroy } from 'svelte';
 
-	let urlValue = '';
-	let loadedUrl = '';
+	let urlValue = $state('');
+	let loadedUrl = $state('');
 	let objectUrl: string | null = null;
-	let fileInput: HTMLInputElement;
-	let imageState: 'loading' | 'ready' | 'error' = 'loading';
-	let frameType: 'none' | 'thirds' | 'golden' = 'none';
+	let fileInput: HTMLInputElement = $state();
+	let imageState: 'loading' | 'ready' | 'error' = $state('loading');
+	let frameType: 'none' | 'thirds' | 'golden' = $state('none');
 
 	function revokeObjectUrl() {
 		if (objectUrl) {
@@ -50,7 +52,7 @@
 	<hr />
 
 	<form
-		on:submit|preventDefault={handleSubmit}
+		onsubmit={preventDefault(handleSubmit)}
 		class="grid grid-cols-[1fr_auto] gap-4 items-end"
 	>
 		<label for="url" class="grid">
@@ -71,7 +73,7 @@
 			disabled={!urlValue}
 			class="rounded-full bg-indigo-500 text-white font-bold py-2 px-6 disabled:bg-gray-100 disabled:text-black disabled:font-normal disabled:opacity-50"
 		>
-			<span class="fas fa-floppy-disk" /> Load
+			<span class="fas fa-floppy-disk"></span> Load
 		</button>
 	</form>
 
@@ -86,7 +88,7 @@
 
 		<input
 			bind:this={fileInput}
-			on:change={handleFileChange}
+			onchange={handleFileChange}
 			type="file"
 			name="file"
 			id="file"
@@ -101,7 +103,7 @@
 		{#if imageState == 'loading'}
 			{#if loadedUrl}
 				<p class="italic text-gray-700 justify-center items-center flex gap-4">
-					<span class="fas fa-spinner-third fa-spin text-indigo-500" />
+					<span class="fas fa-spinner-third fa-spin text-indigo-500"></span>
 					Loading image...
 				</p>
 			{:else}
@@ -118,25 +120,25 @@
 			<div
 				class="absolute w-full h-full bg-center bg-cover blur-xl brightness-50"
 				style="background-image: url('{loadedUrl}');"
-			/>
+			></div>
 			<div class="h-96 flex relative">
 				<img
 					src={loadedUrl}
 					class="relative object-contain"
 					alt="User loaded"
-					on:load={() => (imageState = 'ready')}
-					on:error={() => (imageState = 'error')}
+					onload={() => (imageState = 'ready')}
+					onerror={() => (imageState = 'error')}
 				/>
 				{#if frameType == 'thirds'}
 					<div
 						class="absolute top-0 w-full h-full"
 						style="background-image: url('rule-of-thirds.svg')"
-					/>
+					></div>
 				{:else if frameType == 'golden'}
 					<div
 						class="absolute top-0 w-full h-full"
 						style="background-image: url('golden-ratio.svg')"
-					/>
+					></div>
 				{/if}
 			</div>
 		</div>
